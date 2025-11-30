@@ -10,10 +10,9 @@
 
 ## 👨‍💻 Creador
 
-**Hector Nolivos**  
-📧 hector@nolivos.cloud  
-🌐 https://nolivos.cloud  
-🏢 Nolivos Law & Technology
+**Hector Nolivos**
+📧 hector@nolivos.cloud
+🌐 https://nolivos.cloud
 
 ---
 
@@ -70,5 +69,4 @@ Abre: **http://localhost:4994**
 
 ---
 
-**Creado con ❤️ por Hector Nolivos**  
-**Nolivos Law & Technology**
+**Creado con ❤️ por Hector Nolivos**
