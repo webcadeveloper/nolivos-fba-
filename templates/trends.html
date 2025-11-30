@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tendencias del Mercado - NOLIVOS FBA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-right: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 2rem;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo {
+            margin-bottom: 3rem;
+            text-align: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo img {
+            max-width: 180px;
+            height: auto;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: rgba(76, 175, 80, 0.2);
+            color: white;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Cards */
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(30px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .card-title {
+            color: white;
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        /* Trending Products List */
+        .trending-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .trending-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid;
+            transition: all 0.3s ease;
+        }
+
+        .trending-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .trending-item.excellent {
+            border-left-color: #4CAF50;
+        }
+
+        .trending-item.good {
+            border-left-color: #FFC107;
+        }
+
+        .trending-item.regular {
+            border-left-color: #FF9800;
+        }
+
+        .product-info {
+            flex: 1;
+        }
+
+        .product-name {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .product-meta {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+
+        .product-link {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: 1px solid;
+        }
+
+        .amazon-link {
+            background: rgba(255, 153, 0, 0.2);
+            color: #FFA726;
+            border-color: rgba(255, 153, 0, 0.4);
+        }
+
+        .amazon-link:hover {
+            background: rgba(255, 153, 0, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 153, 0, 0.3);
+        }
+
+        .supplier-link {
+            background: rgba(76, 175, 80, 0.2);
+            color: #66BB6A;
+            border-color: rgba(76, 175, 80, 0.4);
+        }
+
+        .supplier-link:hover {
+            background: rgba(76, 175, 80, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        }
+
+        .trend-stats {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            color: white;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.8rem;
+        }
+
+        .trend-up {
+            color: #4CAF50;
+        }
+
+        .trend-down {
+            color: #f44336;
+        }
+
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 1rem;
+        }
+
+        /* Hot Categories */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .category-card {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .category-name {
+            color: white;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .category-metric {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .ai-insight {
+            background: rgba(139, 195, 74, 0.15);
+            border: 1px solid rgba(139, 195, 74, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .ai-title {
+            color: #8BC34A;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .ai-text {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <img src="/static/images/logo.png" alt="NOLIVOS FBA">
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/" class="nav-link">
+                    <span>🏠</span>
+                    <span>Inicio</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/opportunities" class="nav-link">
+                    <span>💰</span>
+                    <span>Oportunidades</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/trends" class="nav-link active">
+                    <span>📈</span>
+                    <span>Tendencias</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/alerts" class="nav-link">
+                    <span>🔔</span>
+                    <span>Alertas</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <div class="header">
+                <h1>📈 Tendencias del Mercado</h1>
+                <p>Productos en alza y categorías HOT detectadas por IA</p>
+            </div>
+
+            <!-- AI Insights -->
+            {% if ai_insights %}
+            <div class="ai-insight">
+                <div class="ai-title">
+                    <span>🤖</span>
+                    <span>Análisis de IA</span>
+                </div>
+                <div class="ai-text">
+                    <strong>Categoría Recomendada:</strong> {{ ai_insights.top_category }}<br>
+                    <strong>Razón:</strong> {{ ai_insights.reason }}<br>
+                    {% if ai_insights.seasonal_alert %}
+                    <strong>⚠️ Alerta:</strong> {{ ai_insights.seasonal_alert }}
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Hot Categories -->
+            <div class="card">
+                <h2 class="card-title">🔥 Categorías Más Calientes</h2>
+                <div class="category-grid">
+                    {% for cat in hot_categories %}
+                    <div class="category-card">
+                        <div class="category-name">{{ cat.category }}</div>
+                        <div class="category-metric">🚀 {{ cat.trending_products }} productos en alza</div>
+                        <div class="category-metric">📊 BSR mejora promedio: {{ cat.avg_bsr_improvement }}</div>
+                        <div class="category-metric">⭐ Score: {{ cat.avg_score }}/100</div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Trending Products -->
+            <div class="card">
+                <h2 class="card-title">🚀 Productos en Tendencia Alcista</h2>
+                <div class="trending-list">
+                    {% for product in trending_products %}
+                    <div class="trending-item {% if product.opportunity_score >= 75 %}excellent{% elif product.opportunity_score >= 60 %}good{% else %}regular{% endif %}">
+                        <div class="product-info">
+                            <div class="product-name">{{ product.product_name[:60] }}</div>
+                            <div class="product-meta">
+                                {{ product.category }} | BSR: {{ product.current_bsr }} |
+                                {{ product.bsr_trend }} | {{ product.demand_trend }}
+                            </div>
+                            <div class="product-links" style="margin-top: 0.75rem; display: flex; gap: 0.5rem;">
+                                <a href="https://www.amazon.com/dp/{{ product.asin }}" target="_blank" class="product-link amazon-link">
+                                    🛒 Ver en Amazon
+                                </a>
+                                {% if product.supplier_url %}
+                                <a href="{{ product.supplier_url }}" target="_blank" class="product-link supplier-link">
+                                    💰 {{ product.supplier_name }} (${{'%.2f' | format(product.supplier_price)}})
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="trend-stats">
+                            <div class="stat">
+                                <div class="stat-value trend-up">↑{{ product.bsr_change_30d }}</div>
+                                <div class="stat-label">BSR Mejora</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">${{ product.current_price }}</div>
+                                <div class="stat-label">Precio</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-value">{{ product.opportunity_score }}</div>
+                                <div class="stat-label">Score</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Sample Chart -->
+            <div class="card">
+                <h2 class="card-title">📊 Categorías con Mayor Crecimiento</h2>
+                <div class="chart-container">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Chart.js configuration
+        const ctx = document.getElementById('categoryChart');
+
+        const categories = {{ hot_categories | tojson }};
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: categories.map(c => c.category),
+                datasets: [{
+                    label: 'Productos en Tendencia',
+                    data: categories.map(c => c.trending_products),
+                    backgroundColor: 'rgba(76, 175, 80, 0.6)',
+                    borderColor: 'rgba(76, 175, 80, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.8)'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.8)'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.8)'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

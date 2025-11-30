@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultados del Análisis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #232f3e;
+            --secondary-color: #ff9900;
+            --bg-color: #f3f3f3;
+            --card-bg: #ffffff;
+            --text-color: #333;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 3rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 800px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        h3 {
+            color: var(--primary-color);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+        }
+
+        p {
+            line-height: 1.6;
+            color: #444;
+            white-space: pre-line;
+        }
+
+        a {
+            color: #007185;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+            color: #c7511f;
+        }
+
+        .url-box {
+            background-color: #f0f2f2;
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 2rem;
+            word-break: break-all;
+        }
+
+        .price-tracking-section {
+            background-color: #e8f4f8;
+            padding: 2rem;
+            border-radius: 8px;
+            border-left: 4px solid #007185;
+            margin-top: 2rem;
+        }
+
+        .price-tracking-section h3 {
+            color: #007185;
+            margin-top: 0;
+        }
+
+        .fba-section {
+            background-color: #fff5e6;
+            padding: 2rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary-color);
+            margin-top: 2rem;
+        }
+
+        .fba-section h3 {
+            margin-top: 0;
+            color: var(--secondary-color);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(255, 153, 0, 0.2);
+        }
+
+        input[type="submit"],
+        .track-button {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 1rem;
+            width: 100%;
+        }
+
+        input[type="submit"]:hover,
+        .track-button:hover {
+            background-color: #e68a00;
+        }
+
+        .track-button {
+            background-color: #007185;
+        }
+
+        .track-button:hover {
+            background-color: #005a6e;
+        }
+
+        .back-button {
+            background-color: #6c757d;
+            margin-top: 0.5rem;
+        }
+
+        .back-button:hover {
+            background-color: #5a6268;
+        }
+
+        #priceChart {
+            margin-top: 1.5rem;
+            max-width: 100%;
+        }
+
+        .stock-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-left: 1rem;
+        }
+
+        .stock-badge.in-stock {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .stock-badge.out-of-stock {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .stock-badge.low-stock {
+            background-color: #ffc107;
+            color: #333;
+        }
+
+        .stock-badge.unknown {
+            background-color: #6c757d;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Resultados del Análisis</h1>
+
+        <div class="url-box">
+            <strong>Producto Analizado:</strong> <a href="{{ product_url }}" target="_blank">{{ product_url }}</a>
+            {% if stock_status %}
+            <span class="stock-badge {% if stock_status.current_status == 'In Stock' %}in-stock{% elif stock_status.current_status == 'Out of Stock' %}out-of-stock{% elif stock_status.current_status == 'Low Stock' %}low-stock{% else %}unknown{% endif %}">
+                {% if stock_status.current_status == 'In Stock' %}
+                    ✅ In Stock
+                {% elif stock_status.current_status == 'Out of Stock' %}
+                    ❌ Out of Stock
+                {% elif stock_status.current_status == 'Low Stock' %}
+                    ⚠️ Low Stock
+                    {% if stock_status.current_quantity %}
+                        ({{ stock_status.current_quantity }} unidades)
+                    {% endif %}
+                {% else %}
+                    ❓ {{ stock_status.current_status or 'Unknown' }}
+                {% endif %}
+            </span>
+            {% endif %}
+        </div>
+
+        <h3>Resumen</h3>
+        <p>{{ summary }}</p>
+
+        <h3>Pros y Contras</h3>
+        <p>{{ pros_cons }}</p>
+
+        <h3>Recomendación</h3>
+        <p>{{ recommendation }}</p>
+
+        <h3>Sugerencia de Compra Conjunta</h3>
+        <p>{{ buy_together }}</p>
+
+        <!-- Sección de Análisis de Competencia -->
+        {% if competitors %}
+        <div class="fba-section" style="background-color: #f0f8ff; border-left: 4px solid #007185;">
+            <h3 style="color: #007185;">🏆 Análisis de Competencia</h3>
+            <p><strong>Total de Vendedores:</strong> {{ competitors.total_sellers }}</p>
+
+            {% if competitors.buy_box_winner and competitors.buy_box_winner.name != 'No disponible' %}
+            <div style="background-color: white; padding: 1rem; border-radius: 6px; margin-top: 1rem;">
+                <h4 style="margin-top: 0; color: #007185;">💰 Ganador del Buy Box</h4>
+                <p style="margin: 0.5rem 0;"><strong>Vendedor:</strong> {{ competitors.buy_box_winner.name }}</p>
+                <p style="margin: 0.5rem 0;"><strong>Precio:</strong> ${{ competitors.buy_box_winner.price }}</p>
+                <p style="margin: 0.5rem 0;"><strong>Tipo:</strong> {{ competitors.buy_box_winner.fulfillment_type }}</p>
+                {% if competitors.buy_box_winner.rating > 0 %}
+                <p style="margin: 0.5rem 0;"><strong>Rating:</strong> {{ competitors.buy_box_winner.rating }}/5 ⭐</p>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Sección de Estimación de Ventas -->
+        {% if sales %}
+        <div class="fba-section" style="background-color: #e6f7e6; border-left: 4px solid #28a745;">
+            <h3 style="color: #28a745;">📦 Estimación de Ventas</h3>
+            <p><strong>BSR (Best Sellers Rank):</strong> #{{ sales.bsr_used | int }} en {{ sales.category_used }}</p>
+            <p><strong>Unidades Estimadas/Mes:</strong> ~{{ sales.estimated_monthly_units | int }} unidades</p>
+            {% if sales.estimated_monthly_revenue > 0 %}
+            <p><strong>Revenue Estimado/Mes:</strong> ${{ "%.2f" | format(sales.estimated_monthly_revenue) }}</p>
+            {% endif %}
+            <p><strong>Nivel de Confianza:</strong>
+                {% if sales.confidence_level == 'high' %}
+                    <span style="color: #28a745; font-weight: 600;">🟢 Alto</span>
+                {% elif sales.confidence_level == 'medium' %}
+                    <span style="color: #ffc107; font-weight: 600;">🟡 Medio</span>
+                {% else %}
+                    <span style="color: #dc3545; font-weight: 600;">🔴 Bajo</span>
+                {% endif %}
+            </p>
+            <p style="font-size: 0.9rem; color: #666; margin-top: 1rem;">
+                <em>Nota: Esta es una estimación basada en el BSR. Las ventas reales pueden variar.</em>
+            </p>
+            <div style="margin-top: 1rem;">
+                <a href="/bsr-chart/{{ asin }}" target="_blank" style="display: inline-block; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; transition: all 0.3s ease;">
+                    📊 Ver Histórico BSR
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Sección de Análisis de Rentabilidad (Proveedores) -->
+        {% if profit_analysis and profit_analysis.success %}
+        <div class="fba-section" style="background-color: #fff9e6; border-left: 4px solid #FFB800;">
+            <h3 style="color: #FFB800;">💰 Análisis de Rentabilidad - Proveedores vs Amazon</h3>
+
+            <!-- Decisión principal -->
+            <div style="background-color: {% if profit_analysis.competitiveness.level.startswith('🟢') %}#d4edda{% elif profit_analysis.competitiveness.level.startswith('🟡') %}#fff3cd{% else %}#f8d7da{% endif %}; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center;">
+                <h2 style="margin: 0; font-size: 2rem; color: #333;">{{ profit_analysis.competitiveness.level }}</h2>
+                <p style="margin: 0.5rem 0 0 0; font-size: 1.1rem; font-weight: 600;">{{ profit_analysis.competitiveness.recommendation }}</p>
+            </div>
+
+            <!-- Comparación visual Proveedor vs Amazon -->
+            <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 1rem; margin-bottom: 1.5rem; align-items: center;">
+                <!-- Proveedor (Compra) -->
+                <div style="background-color: white; padding: 1.5rem; border-radius: 8px; text-align: center; border: 2px solid #007185;">
+                    <h4 style="margin: 0 0 1rem 0; color: #007185;">🛒 COMPRA</h4>
+                    <p style="margin: 0.5rem 0;"><strong>Proveedor:</strong> {{ profit_analysis.supplier_info.supplier }}</p>
+                    <p style="margin: 0.5rem 0;"><strong>Precio:</strong> ${{ "%.2f" | format(profit_analysis.supplier_info.price) }}</p>
+                    <p style="margin: 0.5rem 0;"><strong>Shipping:</strong> ${{ "%.2f" | format(profit_analysis.supplier_info.shipping) }}</p>
+                    <p style="margin: 1rem 0 0 0; font-size: 1.5rem; font-weight: 700; color: #007185;">
+                        TOTAL: ${{ "%.2f" | format(profit_analysis.supplier_price) }}
+                    </p>
+                    {% if profit_analysis.supplier_info.moq > 1 %}
+                    <p style="margin: 0.5rem 0; font-size: 0.9rem; color: #666;">MOQ: {{ profit_analysis.supplier_info.moq }} unidades</p>
+                    {% endif %}
+                    {% if profit_analysis.supplier_info.url %}
+                    <a href="{{ profit_analysis.supplier_info.url }}" target="_blank" style="display: inline-block; margin-top: 0.5rem; color: #007185; text-decoration: underline;">Ver en {{ profit_analysis.supplier_info.supplier }}</a>
+                    {% endif %}
+                </div>
+
+                <!-- Flecha de ganancia -->
+                <div style="font-size: 3rem; color: {% if profit_analysis.net_profit > 0 %}#28a745{% else %}#dc3545{% endif %};">
+                    →
+                </div>
+
+                <!-- Amazon (Venta) -->
+                <div style="background-color: white; padding: 1.5rem; border-radius: 8px; text-align: center; border: 2px solid #FFB800;">
+                    <h4 style="margin: 0 0 1rem 0; color: #FFB800;">💵 VENTA</h4>
+                    <p style="margin: 0.5rem 0;"><strong>Precio Amazon:</strong> ${{ "%.2f" | format(profit_analysis.amazon_price) }}</p>
+                    <p style="margin: 0.5rem 0;"><strong>Fees Amazon:</strong> -${{ "%.2f" | format(profit_analysis.amazon_fees) }}</p>
+                    <p style="margin: 0.5rem 0;"><strong>Costo Total:</strong> -${{ "%.2f" | format(profit_analysis.total_cost) }}</p>
+                    <p style="margin: 1rem 0 0 0; font-size: 1.5rem; font-weight: 700; color: {% if profit_analysis.net_profit > 0 %}#28a745{% else %}#dc3545{% endif %};">
+                        GANANCIA: ${{ "%.2f" | format(profit_analysis.net_profit) }}
+                    </p>
+                    <p style="margin: 0.5rem 0; font-size: 1.1rem; font-weight: 600;">
+                        ROI: {{ "%.1f" | format(profit_analysis.roi_percent) }}% | Margen: {{ "%.1f" | format(profit_analysis.margin_percent) }}%
+                    </p>
+                </div>
+            </div>
+
+            <!-- Razones del análisis -->
+            <div style="background-color: white; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                <h4 style="margin: 0 0 1rem 0; color: #333;">📋 Factores Evaluados (Score: {{ profit_analysis.competitiveness.score }}/100)</h4>
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    {% for reason in profit_analysis.competitiveness.reasons %}
+                    <li style="padding: 0.5rem 0; border-bottom: 1px solid #eee;">{{ reason }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Precio óptimo sugerido -->
+            {% if profit_analysis.optimal_selling_price %}
+            <div style="background-color: #e8f5e9; padding: 1.5rem; border-radius: 8px; border: 2px solid #28a745;">
+                <h4 style="margin: 0 0 1rem 0; color: #28a745;">🎯 Precio de Venta Óptimo</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <p style="margin: 0.5rem 0;"><strong>Precio Recomendado:</strong> ${{ "%.2f" | format(profit_analysis.optimal_selling_price.recommended_price) }}</p>
+                        <p style="margin: 0.5rem 0;"><strong>Precio Actual Mercado:</strong> ${{ "%.2f" | format(profit_analysis.optimal_selling_price.market_price) }}</p>
+                    </div>
+                    <div>
+                        <p style="margin: 0.5rem 0;"><strong>Diferencia:</strong>
+                            <span style="color: {% if profit_analysis.optimal_selling_price.can_compete %}#28a745{% else %}#dc3545{% endif %}; font-weight: 600;">
+                                ${{ "%.2f" | format(profit_analysis.optimal_selling_price.difference_from_market) }}
+                            </span>
+                        </p>
+                        <p style="margin: 0.5rem 0;"><strong>Competitivo:</strong>
+                            {% if profit_analysis.optimal_selling_price.can_compete %}
+                                <span style="color: #28a745; font-weight: 600;">✅ SÍ</span>
+                            {% else %}
+                                <span style="color: #dc3545; font-weight: 600;">❌ NO</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                <p style="margin: 1rem 0 0 0; font-size: 0.9rem; color: #666;"><em>{{ profit_analysis.optimal_selling_price.note }}</em></p>
+            </div>
+            {% endif %}
+
+            <!-- Proveedores alternativos -->
+            {% if profit_analysis.all_suppliers and profit_analysis.all_suppliers|length > 1 %}
+            <div style="margin-top: 1.5rem;">
+                <h4 style="margin: 0 0 1rem 0; color: #333;">🌐 Otros Proveedores Encontrados</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                    {% for supplier in profit_analysis.all_suppliers[1:5] %}
+                    <div style="background-color: white; padding: 1rem; border-radius: 8px; border: 1px solid #ddd;">
+                        <p style="margin: 0.5rem 0; font-weight: 600;">{{ supplier.supplier }}</p>
+                        <p style="margin: 0.5rem 0;">Precio: ${{ "%.2f" | format(supplier.total) }}</p>
+                        {% if supplier.moq > 1 %}
+                        <p style="margin: 0.5rem 0; font-size: 0.85rem; color: #666;">MOQ: {{ supplier.moq }}</p>
+                        {% endif %}
+                        {% if supplier.estimated %}
+                        <p style="margin: 0.5rem 0; font-size: 0.85rem; color: #ff9800;">⚠️ Estimado</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if profit_analysis.supplier_info.estimated or profit_analysis.supplier_info.note %}
+            <p style="margin-top: 1rem; padding: 1rem; background-color: #fff3cd; border-radius: 6px; font-size: 0.9rem; color: #856404;">
+                <strong>⚠️ Nota:</strong> {{ profit_analysis.supplier_info.note }}
+            </p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Sección de Price Tracking -->
+        <div class="price-tracking-section">
+            <h3>📈 Historial de Precios</h3>
+            <p>Visualiza cómo ha cambiado el precio de este producto en los últimos 30 días.</p>
+
+            <canvas id="priceChart" width="800" height="300"></canvas>
+
+            <button id="trackProductBtn" class="track-button">
+                🔔 Trackear este Producto
+            </button>
+            <p id="trackMessage" style="margin-top: 0.5rem; color: #067d62; font-weight: 600;"></p>
+        </div>
+
+        <!-- Sección FBA Calculator -->
+        <div class="fba-section">
+            <h3>📊 Calcular Rentabilidad FBA</h3>
+            <p>¿Quieres vender este producto en Amazon FBA? Calcula tu rentabilidad aquí:</p>
+
+            <form method="POST" action="/calculate-fba">
+                <!-- Extraer ASIN de la URL -->
+                {% set asin = product_url.split('/dp/')[1].split('/')[0] if '/dp/' in product_url else '' %}
+                <input type="hidden" name="asin" value="{{ asin }}">
+
+                <div class="form-group">
+                    <label for="product_cost">Costo del Producto ($)</label>
+                    <input type="number" id="product_cost" name="product_cost" step="0.01" min="0" placeholder="15.00"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label for="shipping_cost">Costo de Envío al Warehouse ($)</label>
+                    <input type="number" id="shipping_cost" name="shipping_cost" step="0.01" min="0" placeholder="2.50"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label for="month">Mes de Venta (para storage fee)</label>
+                    <select id="month" name="month" required>
+                        <option value="1">Enero</option>
+                        <option value="2">Febrero</option>
+                        <option value="3">Marzo</option>
+                        <option value="4">Abril</option>
+                        <option value="5">Mayo</option>
+                        <option value="6">Junio</option>
+                        <option value="7">Julio</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Septiembre</option>
+                        <option value="10">Octubre</option>
+                        <option value="11">Noviembre</option>
+                        <option value="12">Diciembre</option>
+                    </select>
+                </div>
+
+                <input type="submit" value="Calcular Rentabilidad FBA">
+            </form>
+        </div>
+
+        <form method="POST" action="/back">
+            <input type="submit" value="Volver al Inicio" class="back-button">
+        </form>
+    </div>
+
+    <script>
+        // Extraer ASIN de la URL
+        const productUrl = "{{ product_url }}";
+        const asin = productUrl.includes('/dp/') ? productUrl.split('/dp/')[1].split('/')[0] : '';
+
+        // Cargar historial de precios
+        async function loadPriceHistory() {
+            try {
+                const response = await fetch(`/price-history/${asin}?days=30`);
+                const history = await response.json();
+
+                if (history.length > 0) {
+                    renderPriceChart(history);
+                } else {
+                    document.getElementById('priceChart').style.display = 'none';
+                    const msg = document.createElement('p');
+                    msg.textContent = 'No hay historial de precios disponible. Haz clic en "Trackear" para comenzar.';
+                    msg.style.color = '#666';
+                    document.querySelector('.price-tracking-section').appendChild(msg);
+                }
+            } catch (error) {
+                console.error('Error loading price history:', error);
+            }
+        }
+
+        // Renderizar gráfico con Chart.js
+        function renderPriceChart(history) {
+            const labels = history.map(h => new Date(h.timestamp).toLocaleDateString());
+            const prices = history.map(h => h.price);
+
+            const ctx = document.getElementById('priceChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Precio ($)',
+                        data: prices,
+                        borderColor: '#007185',
+                        backgroundColor: 'rgba(0, 113, 133, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Historial de Precios (Últimos 30 días)'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function (value) {
+                                    return '$' + value.toFixed(2);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Botón para trackear producto
+        document.getElementById('trackProductBtn').addEventListener('click', async function () {
+            try {
+                const formData = new FormData();
+                formData.append('product_name', document.title);
+
+                const response = await fetch(`/track-product/${asin}`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById('trackMessage').textContent = '✅ Producto añadido al tracking!';
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    document.getElementById('trackMessage').textContent = '❌ Error: ' + result.error;
+                    document.getElementById('trackMessage').style.color = '#c7511f';
+                }
+            } catch (error) {
+                console.error('Error tracking product:', error);
+                document.getElementById('trackMessage').textContent = '❌ Error al trackear producto';
+                document.getElementById('trackMessage').style.color = '#c7511f';
+            }
+        });
+
+        // Cargar historial al cargar la página
+        if (asin) {
+            loadPriceHistory();
+        }
+    </script>
+</body>
+
+</html>

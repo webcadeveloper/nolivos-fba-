@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios - NOLIVOS FBA</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #1e3c72;
+            margin-bottom: 0.5rem;
+        }
+
+        .header .info {
+            color: #666;
+            font-size: 0.95rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .card h2 {
+            color: #1e3c72;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-owner {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-analyst {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .badge-va {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-viewer {
+            background: #e2e3e5;
+            color: #383d41;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .btn-sm {
+            padding: 0.35rem 0.75rem;
+            font-size: 0.85rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #333;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .nav {
+            margin-bottom: 2rem;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 1rem;
+            padding: 0.5rem 1rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .nav a:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="/">🏠 Dashboard</a>
+            <a href="/users">👥 Usuarios</a>
+            <a href="/activity-log">📊 Activity Log</a>
+            <a href="/logout">🚪 Salir</a>
+        </div>
+
+        <div class="header">
+            <h1>👥 Gestión de Usuarios</h1>
+            <p class="info">
+                Workspace: <strong>{{ workspace_name }}</strong> |
+                Tu rol: <strong>{{ current_user.role }}</strong>
+            </p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        {% if current_user.role == 'owner' %}
+        <div class="card">
+            <h2>➕ Invitar Nuevo Usuario</h2>
+            <form method="POST" action="{{ url_for('invite_user') }}">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Contraseña Temporal</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="role">Rol</label>
+                    <select id="role" name="role" required>
+                        <option value="analyst">Analyst - Análisis completo</option>
+                        <option value="va">VA - Asistente virtual</option>
+                        <option value="viewer">Viewer - Solo lectura</option>
+                        <option value="owner">Owner - Acceso completo</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    ➕ Crear Usuario
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+        <div class="card">
+            <h2>📋 Usuarios del Workspace</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Creado</th>
+                        <th>Último Login</th>
+                        <th>Estado</th>
+                        {% if current_user.role == 'owner' %}
+                        <th>Acciones</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            <span class="badge badge-{{ user.role }}">
+                                {{ user.role }}
+                            </span>
+                        </td>
+                        <td>{{ user.created_at[:10] }}</td>
+                        <td>{{ user.last_login[:10] if user.last_login else 'Nunca' }}</td>
+                        <td>
+                            {% if user.is_active %}
+                            <span style="color: green;">✅ Activo</span>
+                            {% else %}
+                            <span style="color: red;">❌ Inactivo</span>
+                            {% endif %}
+                        </td>
+                        {% if current_user.role == 'owner' and user.id != current_user.id %}
+                        <td>
+                            <a href="/users/deactivate/{{ user.id }}"
+                               class="btn btn-danger btn-sm"
+                               onclick="return confirm('¿Desactivar este usuario?')">
+                                Desactivar
+                            </a>
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,134 @@
+<div class="dashboard-container">
+  <div class="header">
+    <h1>Dashboard FBA</h1>
+    <p>Panel de control de oportunidades Amazon FBA</p>
+  </div>
+
+  @if (loading) {
+    <div class="loading">Cargando estadísticas...</div>
+  }
+
+  @if (error) {
+    <div class="error">{{ error }}</div>
+  }
+
+  @if (stats) {
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-label">Total Oportunidades</div>
+        <div class="stat-value">{{ stats.total_opportunities }}</div>
+        <div class="stat-change positive">+{{ stats.total_opportunities }} nuevas</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">💵</div>
+        <div class="stat-label">Ganancia Promedio</div>
+        <div class="stat-value">\${{ stats.avg_profit | number:'1.2-2' }}</div>
+        <div class="stat-sublabel">Por producto</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon">📈</div>
+        <div class="stat-label">ROI Promedio</div>
+        <div class="stat-value">{{ stats.avg_roi | number:'1.1-1' }}%</div>
+        <div class="stat-sublabel">Retorno de inversión</div>
+      </div>
+
+      <div class="stat-card highlight">
+        <div class="stat-icon">🏆</div>
+        <div class="stat-label">Mejor ROI</div>
+        <div class="stat-value">{{ stats.max_roi | number:'1.1-1' }}%</div>
+        <div class="stat-sublabel">Mayor oportunidad</div>
+      </div>
+    </div>
+  }
+
+  <div class="quick-actions">
+    <h2>Acciones Rápidas</h2>
+    <div class="actions-grid">
+      <a routerLink="/opportunities" class="action-card">
+        <div class="action-icon">🔍</div>
+        <div class="action-title">Ver Oportunidades</div>
+        <div class="action-description">Explorar productos rentables</div>
+      </a>
+
+      <div class="action-card" (click)="startQuickScan()">
+        <div class="action-icon">⚡</div>
+        <div class="action-title">Escaneo Rápido</div>
+        <div class="action-description">Buscar nuevas oportunidades</div>
+      </div>
+
+      <a routerLink="/scanner" class="action-card">
+        <div class="action-icon">⚙️</div>
+        <div class="action-title">Configurar Escaneo</div>
+        <div class="action-description">Personalizar búsqueda</div>
+      </a>
+
+      <div class="action-card" (click)="exportData()">
+        <div class="action-icon">📊</div>
+        <div class="action-title">Exportar Datos</div>
+        <div class="action-description">Descargar en Excel</div>
+      </div>
+    </div>
+  </div>
+
+  @if (topOpportunities.length > 0) {
+    <div class="top-opportunities">
+      <h2>Top 5 Mejores Oportunidades</h2>
+      <div class="opportunities-grid">
+        @for (opp of topOpportunities; track opp.asin) {
+          <div class="opportunity-card">
+            @if (opp.image_url) {
+              <img [src]="opp.image_url" [alt]="opp.product_name" class="product-image">
+            } @else {
+              <div class="product-image-placeholder">📦</div>
+            }
+            <div class="opportunity-content">
+              <h3 class="product-title">{{ opp.product_name.substring(0, 60) }}{{ opp.product_name.length > 60 ? '...' : '' }}</h3>
+              <div class="opportunity-stats">
+                <div class="stat-item">
+                  <span class="label">ROI:</span>
+                  <span class="value roi">{{ opp.roi_percent | number:'1.1-1' }}%</span>
+                </div>
+                <div class="stat-item">
+                  <span class="label">Ganancia:</span>
+                  <span class="value profit">\${{ opp.net_profit | number:'1.2-2' }}</span>
+                </div>
+                <div class="stat-item">
+                  <span class="label">Precio:</span>
+                  <span class="value">\${{ opp.amazon_price | number:'1.2-2' }}</span>
+                </div>
+              </div>
+              <a [href]="opp.amazon_url || 'https://www.amazon.com/dp/' + opp.asin" 
+                 target="_blank" class="view-product-btn">
+                Ver Producto
+              </a>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <div class="scan-status">
+    <h2>Estado del Sistema</h2>
+    <div class="status-grid">
+      <div class="status-item">
+        <div class="status-icon active">✓</div>
+        <div class="status-label">API Backend</div>
+        <div class="status-value">Activo</div>
+      </div>
+      <div class="status-item">
+        <div class="status-icon">📡</div>
+        <div class="status-label">Última Actualización</div>
+        <div class="status-value">{{ lastUpdate }}</div>
+      </div>
+      <div class="status-item">
+        <div class="status-icon">🔄</div>
+        <div class="status-label">Productos Escaneados</div>
+        <div class="status-value">{{ stats?.total_opportunities || 0 }}</div>
+      </div>
+    </div>
+  </div>
+</div>

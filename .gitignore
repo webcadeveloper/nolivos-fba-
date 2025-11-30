@@ -1,0 +1,102 @@
+# Environment variables (NUNCA SUBIR)
+.env
+.env.local
+.env.production
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# Databases (contienen datos sensibles)
+*.db
+*.sqlite
+*.sqlite3
+data/*.db
+
+# Logs
+*.log
+logs/
+amazon-scraper.log
+
+# Backups
+backups/
+*.tar.gz
+*.zip
+
+# SSL certificates
+ssl/
+*.pem
+*.key
+*.crt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+*.bak
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Node & Angular
+node_modules/
+npm-debug.log
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Angular
+/frontend/.angular/
+/frontend/dist/
+/frontend/.sass-cache/
+/frontend/tmp/
+/frontend/out-tsc/
+/frontend/bazel-out/
+
+# Docker (opcional - algunos prefieren commitear)
+# docker-compose.override.yml
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Jupyter notebooks checkpoints
+.ipynb_checkpoints/
+
+# API keys y credentials
+api_keys.db
+users.db
+telegram_config.db
+email_settings.db
+
+# Scraping data
+opportunities.db
+product_history.db
+alert_system.db
+buybox_history.db
+review_history.db
+
+# Cache
+.cache/
+*.cache

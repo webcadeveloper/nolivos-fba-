@@ -1,0 +1,26 @@
+<div class="app-container">
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <h1>NOLIVOS FBA</h1>
+      <p>Amazon Opportunity Scanner</p>
+    </div>
+    <div class="navbar-menu">
+      <a routerLink="/dashboard" routerLinkActive="active" class="nav-link">
+        <span class="nav-icon">📊</span>
+        <span>Dashboard</span>
+      </a>
+      <a routerLink="/opportunities" routerLinkActive="active" class="nav-link">
+        <span class="nav-icon">💎</span>
+        <span>Oportunidades</span>
+      </a>
+      <a routerLink="/scanner" routerLinkActive="active" class="nav-link">
+        <span class="nav-icon">⚡</span>
+        <span>Scanner</span>
+      </a>
+    </div>
+  </nav>
+  
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

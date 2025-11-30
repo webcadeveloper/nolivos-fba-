@@ -1,0 +1,146 @@
+<div class="scanner-container">
+  <div class="header">
+    <h1>Configurar Escaneo</h1>
+    <p>Personaliza los parámetros del escaneo automático</p>
+  </div>
+
+  @if (error) {
+    <div class="error">{{ error }}</div>
+  }
+
+  @if (scanRunning) {
+    <div class="scanning-alert">
+      <div class="scanning-icon">🔄</div>
+      <div class="scanning-content">
+        <h3>Escaneo en Progreso</h3>
+        <p>El sistema está buscando nuevas oportunidades...</p>
+        <div class="progress-info">
+          <div class="progress-stat">
+            <span class="label">Productos Escaneados:</span>
+            <span class="value">{{ progress.products_scanned }} / {{ progress.total_products }}</span>
+          </div>
+          <div class="progress-stat">
+            <span class="label">Oportunidades Encontradas:</span>
+            <span class="value">{{ progress.opportunities_found }}</span>
+          </div>
+          <div class="progress-stat">
+            <span class="label">Progreso:</span>
+            <span class="value">{{ progress.progress_percent }}%</span>
+          </div>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="progress.progress_percent"></div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <div class="config-section">
+    <h2>Parámetros de Escaneo</h2>
+    
+    <div class="config-grid">
+      <div class="config-card">
+        <div class="config-icon">📦</div>
+        <div class="config-content">
+          <label class="config-label">Productos por Categoría</label>
+          <input 
+            type="number" 
+            class="config-input" 
+            [(ngModel)]="maxProducts" 
+            min="1" 
+            max="100"
+            [disabled]="scanRunning">
+          <p class="config-description">Número máximo de productos a analizar por cada categoría de Amazon</p>
+        </div>
+      </div>
+
+      <div class="config-card">
+        <div class="config-icon">⚡</div>
+        <div class="config-content">
+          <label class="config-label">Workers Paralelos</label>
+          <input 
+            type="number" 
+            class="config-input" 
+            [(ngModel)]="maxWorkers" 
+            min="1" 
+            max="50"
+            [disabled]="scanRunning">
+          <p class="config-description">Número de procesos paralelos para escanear más rápido</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="preset-buttons">
+      <h3>Configuraciones Predefinidas</h3>
+      <div class="preset-grid">
+        <button class="preset-btn" (click)="setPreset('quick')" [disabled]="scanRunning">
+          <div class="preset-icon">⚡</div>
+          <div class="preset-name">Escaneo Rápido</div>
+          <div class="preset-desc">5 productos, 20 workers</div>
+        </button>
+        <button class="preset-btn" (click)="setPreset('balanced')" [disabled]="scanRunning">
+          <div class="preset-icon">⚖️</div>
+          <div class="preset-name">Balanceado</div>
+          <div class="preset-desc">15 productos, 25 workers</div>
+        </button>
+        <button class="preset-btn" (click)="setPreset('deep')" [disabled]="scanRunning">
+          <div class="preset-icon">🔍</div>
+          <div class="preset-name">Escaneo Profundo</div>
+          <div class="preset-desc">50 productos, 30 workers</div>
+        </button>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn-start" (click)="startScan()" [disabled]="scanRunning">
+        <span class="btn-icon">🚀</span>
+        <span>Iniciar Escaneo</span>
+      </button>
+      <button class="btn-view-results" routerLink="/opportunities">
+        <span class="btn-icon">📊</span>
+        <span>Ver Resultados</span>
+      </button>
+    </div>
+  </div>
+
+  @if (logs.length > 0) {
+    <div class="logs-section">
+      <h2>Registro de Actividad</h2>
+      <div class="logs-container">
+        @for (log of logs; track $index) {
+          <div class="log-entry">{{ log }}</div>
+        }
+      </div>
+      <button class="btn-refresh-logs" (click)="refreshLogs()">
+        🔄 Actualizar Logs
+      </button>
+    </div>
+  }
+
+  <div class="info-section">
+    <h2>Información</h2>
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-icon">ℹ️</div>
+        <div class="info-content">
+          <h3>Productos por Categoría</h3>
+          <p>Más productos = más oportunidades encontradas, pero el escaneo tardará más tiempo.</p>
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">⚡</div>
+        <div class="info-content">
+          <h3>Workers Paralelos</h3>
+          <p>Más workers = escaneo más rápido, pero consume más recursos del sistema.</p>
+        </div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">🎯</div>
+        <div class="info-content">
+          <h3>Recomendación</h3>
+          <p>Para uso diario, usa el escaneo balanceado. Para búsquedas rápidas, usa el escaneo rápido.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

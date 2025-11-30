@@ -1,0 +1,148 @@
+{
+  "name": "HECTOR FBA - Reporte Diario",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "schedule1",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://localhost:4994/api/v1/opportunities",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "min_roi",
+              "value": "20"
+            },
+            {
+              "name": "limit",
+              "value": "10"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "http1",
+      "name": "Obtener Oportunidades",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REEMPLAZAR_CON_TU_CREDENTIAL_ID",
+          "name": "Header Auth - API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const opportunities = $input.all()[0].json.data;\nconst totalOpps = opportunities.length;\n\nif (totalOpps === 0) {\n  return {\n    json: {\n      total: 0,\n      avgROI: 0,\n      best: null,\n      list: []\n    }\n  };\n}\n\nconst avgROI = opportunities.reduce((sum, o) => sum + o.roi_percent, 0) / totalOpps;\nconst bestOpp = opportunities[0];\n\nreturn {\n  json: {\n    total: totalOpps,\n    avgROI: avgROI.toFixed(2),\n    best: bestOpp,\n    list: opportunities\n  }\n};"
+      },
+      "id": "code1",
+      "name": "Procesar Datos",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 1,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "sendTo": "tu@email.com",
+        "subject": "=📊 Reporte Diario FBA - {{ $json.total }} Oportunidades",
+        "message": "=Buenos días!\n\n📈 RESUMEN DIARIO\n\nTotal Oportunidades: {{ $json.total }}\nROI Promedio: {{ $json.avgROI }}%\n\n{{ $json.total > 0 ? '🥇 MEJOR OPORTUNIDAD:\\n' + $json.best.product_name + '\\nROI: ' + $json.best.roi_percent + '%\\nGanancia: $' + $json.best.net_profit : 'No hay oportunidades hoy' }}\n\n🔗 Ver Dashboard: http://localhost:4994/opportunities"
+      },
+      "id": "gmail2",
+      "name": "Enviar Reporte",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [850, 200],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REEMPLAZAR_CON_TU_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "TU_CHAT_ID",
+        "text": "=📊 *REPORTE DIARIO FBA*\n\n{{ $json.total }} oportunidades encontradas\nROI Promedio: {{ $json.avgROI }}%\n\n{{ $json.total > 0 ? '🥇 Mejor: ' + $json.best.product_name + ' (' + $json.best.roi_percent + '%)' : 'Sin oportunidades hoy' }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "telegram2",
+      "name": "Telegram Resumen",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [850, 400],
+      "credentials": {
+        "telegramApi": {
+          "id": "REEMPLAZAR_CON_TU_CREDENTIAL_ID",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Obtener Oportunidades",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener Oportunidades": {
+      "main": [
+        [
+          {
+            "node": "Procesar Datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Procesar Datos": {
+      "main": [
+        [
+          {
+            "node": "Enviar Reporte",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Telegram Resumen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "staticData": null,
+  "tags": ["HECTOR FBA", "Reporte", "Diario"],
+  "pinData": {},
+  "versionId": "1"
+}

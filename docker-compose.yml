@@ -1,0 +1,60 @@
+# Docker Compose para NOLIVOS FBA + Splash
+version: '3.8'
+
+services:
+  # Servicio Splash (JavaScript rendering)
+  splash:
+    image: scrapinghub/splash:latest
+    container_name: nolivos-fba-splash
+    ports:
+      - "8050:8050"
+    environment:
+      - SPLASH_MAXRSS=4096
+    command: --max-timeout 60 --slots 10
+    restart: unless-stopped
+    networks:
+      - nolivos-network
+
+  # Servicio Flask (aplicación principal)
+  app:
+    build: .
+    container_name: nolivos-fba-app
+    ports:
+      - "4994:4994"
+    environment:
+      - FLASK_ENV=production
+      - SPLASH_HOST=http://splash:8050
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    depends_on:
+      - splash
+    restart: unless-stopped
+    networks:
+      - nolivos-network
+
+  # (Opcional) Nginx como reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: nolivos-fba-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+    networks:
+      - nolivos-network
+    profiles:
+      - with-nginx
+
+networks:
+  nolivos-network:
+    driver: bridge
+
+volumes:
+  data:
+  logs:

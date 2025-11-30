@@ -1,0 +1,109 @@
+{
+  "name": "HECTOR FBA - ROI Alto a Telegram",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hector-fba-high-roi",
+        "responseMode": "onReceived"
+      },
+      "id": "webhook2",
+      "name": "Webhook - ROI Alto",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "TU_CHAT_ID",
+        "text": "=🚨 *ALERTA ROI ALTO* 🚨\n\n*{{ $json.data.product_name }}*\n\n💰 *ROI:* {{ $json.data.roi }}%\n💵 *Ganancia:* ${{ $json.data.profit }}\n\n📊 Amazon: ${{ $json.data.amazon_price }}\n🏪 Proveedor: ${{ $json.data.supplier_price }}\n\n⚡ *Urgencia:* {{ $json.data.urgency }}\n📋 *Acción:* {{ $json.data.action_required }}\n\n[Ver Producto]({{ $json.data.url }})",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "telegram1",
+      "name": "Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [450, 200],
+      "credentials": {
+        "telegramApi": {
+          "id": "REEMPLAZAR_CON_TU_CREDENTIAL_ID",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "databaseId": "REEMPLAZAR_CON_TU_DATABASE_ID",
+        "title": "={{ $json.data.product_name }}",
+        "properties": {
+          "customProperties": [
+            {
+              "key": "ASIN",
+              "textContent": "={{ $json.data.asin }}"
+            },
+            {
+              "key": "ROI",
+              "numberValue": "={{ $json.data.roi }}"
+            },
+            {
+              "key": "Ganancia",
+              "numberValue": "={{ $json.data.profit }}"
+            },
+            {
+              "key": "Precio Amazon",
+              "numberValue": "={{ $json.data.amazon_price }}"
+            },
+            {
+              "key": "Precio Proveedor",
+              "numberValue": "={{ $json.data.supplier_price }}"
+            },
+            {
+              "key": "Urgencia",
+              "selectOption": "={{ $json.data.urgency }}"
+            },
+            {
+              "key": "URL",
+              "urlValue": "={{ $json.data.url }}"
+            }
+          ]
+        }
+      },
+      "id": "notion1",
+      "name": "Notion",
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2,
+      "position": [450, 400],
+      "credentials": {
+        "notionApi": {
+          "id": "REEMPLAZAR_CON_TU_CREDENTIAL_ID",
+          "name": "Notion account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook - ROI Alto": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "staticData": null,
+  "tags": ["HECTOR FBA", "ROI Alto", "Telegram"],
+  "pinData": {},
+  "versionId": "1"
+}

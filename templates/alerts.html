@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alertas - NOLIVOS FBA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(30px);
+            border-right: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 2rem;
+        }
+
+        .logo {
+            margin-bottom: 3rem;
+            text-align: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo img {
+            max-width: 180px;
+            height: auto;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .nav-link.active {
+            background: rgba(76, 175, 80, 0.2);
+            color: white;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .alert-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .summary-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(30px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .summary-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .alerts-list {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(30px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .alert-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            border-left: 4px solid;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .alert-item.high {
+            border-left-color: #f44336;
+            background: rgba(244, 67, 54, 0.1);
+        }
+
+        .alert-item.medium {
+            border-left-color: #FFC107;
+            background: rgba(255, 193, 7, 0.1);
+        }
+
+        .alert-item.low {
+            border-left-color: #2196F3;
+            background: rgba(33, 150, 243, 0.1);
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .alert-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-high {
+            background: rgba(244, 67, 54, 0.3);
+            color: #f44336;
+        }
+
+        .badge-medium {
+            background: rgba(255, 193, 7, 0.3);
+            color: #FFC107;
+        }
+
+        .badge-low {
+            background: rgba(33, 150, 243, 0.3);
+            color: #2196F3;
+        }
+
+        .alert-type {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+        }
+
+        .alert-message {
+            color: white;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .alert-product {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        .alert-time {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        .alert-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-view {
+            background: rgba(76, 175, 80, 0.3);
+            color: #8BC34A;
+            text-decoration: none;
+        }
+
+        .btn-view:hover {
+            background: rgba(76, 175, 80, 0.5);
+        }
+
+        .no-alerts {
+            text-align: center;
+            padding: 3rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="logo">
+            <img src="/static/images/logo.png" alt="NOLIVOS FBA">
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/" class="nav-link">
+                    <span>🏠</span>
+                    <span>Inicio</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/opportunities" class="nav-link">
+                    <span>💰</span>
+                    <span>Oportunidades</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/trends" class="nav-link">
+                    <span>📈</span>
+                    <span>Tendencias</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/alerts" class="nav-link active">
+                    <span>🔔</span>
+                    <span>Alertas</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="header">
+                <h1>🔔 Alertas y Notificaciones</h1>
+                <p style="color: rgba(255, 255, 255, 0.8);">Oportunidades urgentes detectadas automáticamente</p>
+            </div>
+
+            <div class="alert-summary">
+                <div class="summary-card">
+                    <div class="summary-value">{{ summary.total_unread }}</div>
+                    <div class="summary-label">Total Sin Leer</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value" style="color: #f44336;">{{ summary.high_priority }}</div>
+                    <div class="summary-label">Alta Prioridad</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value" style="color: #FFC107;">{{ summary.medium_priority }}</div>
+                    <div class="summary-label">Media Prioridad</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-value" style="color: #2196F3;">{{ summary.low_priority }}</div>
+                    <div class="summary-label">Baja Prioridad</div>
+                </div>
+            </div>
+
+            <div class="alerts-list">
+                {% if alerts %}
+                    {% for alert in alerts %}
+                    <div class="alert-item {{ alert.severity }}">
+                        <div class="alert-content">
+                            <div class="alert-header">
+                                <span class="alert-badge badge-{{ alert.severity }}">{{ alert.severity }}</span>
+                                <span class="alert-type">{{ alert.alert_type }}</span>
+                            </div>
+                            <div class="alert-message">{{ alert.message }}</div>
+                            <div class="alert-product">{{ alert.product_name }}</div>
+                            <div class="alert-time">{{ alert.created_at }}</div>
+                        </div>
+                        <div class="alert-actions">
+                            <a href="/analyze?url=https://www.amazon.com/dp/{{ alert.asin }}" class="btn btn-view">
+                                Ver Producto
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-alerts">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">🔕</div>
+                        <h2 style="color: white; margin-bottom: 0.5rem;">No hay alertas nuevas</h2>
+                        <p>Las alertas aparecerán aquí cuando detectemos oportunidades importantes</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</body>
+</html>

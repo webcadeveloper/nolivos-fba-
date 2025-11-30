@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOLIVOS FBA - Analizador de Productos Amazon</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-right: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 2rem 0;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 0 2rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .brand {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .brand-icon {
+            font-size: 2rem;
+        }
+
+        .brand-subtitle {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 0.5rem;
+            font-weight: 400;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0 1rem;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-icon {
+            font-size: 1.4rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 3rem;
+            width: calc(100% - 280px);
+        }
+
+        .page-header {
+            margin-bottom: 3rem;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            color: white;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        /* Glass Cards */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 24px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-title {
+            font-size: 1.8rem;
+            color: white;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .card-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 2rem;
+            font-size: 1.05rem;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            color: white;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            font-size: 1.05rem;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 1.2rem 1.5rem;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            color: white;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1.3rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: white;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 8px 24px rgba(240, 147, 251, 0.4);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 32px rgba(240, 147, 251, 0.5);
+        }
+
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2rem 1.5rem;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            color: white;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-desc {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        /* Instructions */
+        .instructions {
+            margin-top: 2rem;
+        }
+
+        .step {
+            background: rgba(255, 255, 255, 0.08);
+            border-left: 4px solid rgba(255, 255, 255, 0.5);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .step:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-left-color: white;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .step-number {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .step-title {
+            color: white;
+            font-weight: 600;
+            font-size: 1.15rem;
+        }
+
+        .step-desc {
+            color: rgba(255, 255, 255, 0.8);
+            margin-left: 48px;
+            line-height: 1.6;
+        }
+
+        .example-box {
+            background: rgba(255, 193, 7, 0.15);
+            border: 2px dashed rgba(255, 193, 7, 0.5);
+            padding: 1rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            margin-left: 48px;
+            font-family: 'Courier New', monospace;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.95rem;
+        }
+
+        .divider {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 600;
+            font-size: 1.2rem;
+            margin: 2.5rem 0;
+        }
+
+        /* Error Banner */
+        {% if error %}
+        .error-banner {
+            background: rgba(255, 59, 48, 0.2);
+            border: 2px solid rgba(255, 59, 48, 0.5);
+            color: white;
+            padding: 1.2rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+        {% endif %}
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+                padding: 2rem 1.5rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .glass-card {
+            animation: fadeInUp 0.6s ease;
+        }
+
+        .glass-card:nth-child(1) { animation-delay: 0.1s; }
+        .glass-card:nth-child(2) { animation-delay: 0.2s; }
+        .glass-card:nth-child(3) { animation-delay: 0.3s; }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <img src="/static/images/logo.png" alt="NOLIVOS FBA" style="max-width: 180px; height: auto;">
+                </div>
+            </div>
+
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="/" class="nav-link active">
+                            <span class="nav-icon">🏠</span>
+                            <span>Inicio</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/opportunities" class="nav-link">
+                            <span class="nav-icon">💰</span>
+                            <span>Oportunidades</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/trends" class="nav-link">
+                            <span class="nav-icon">📈</span>
+                            <span>Tendencias</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/alerts" class="nav-link">
+                            <span class="nav-icon">🔔</span>
+                            <span>Alertas</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#analizar" class="nav-link">
+                            <span class="nav-icon">🔍</span>
+                            <span>Analizar Producto</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">Analizador de Productos Amazon FBA</h1>
+                <p class="page-subtitle">Descubre si un producto vale la pena ANTES de invertir tu dinero</p>
+            </div>
+
+            {% if error %}
+            <div class="error-banner">
+                ❌ {{ error }}
+            </div>
+            {% endif %}
+
+            <!-- Instructions Card -->
+            <div class="glass-card">
+                <h2 class="card-title">
+                    <span>💡</span>
+                    ¿Cómo funciona?
+                </h2>
+
+                <div class="instructions">
+                    <div class="step">
+                        <div class="step-header">
+                            <div class="step-number">1</div>
+                            <h3 class="step-title">Busca el producto en Amazon</h3>
+                        </div>
+                        <p class="step-desc">Ve a Amazon.com y encuentra el producto que quieres analizar</p>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-header">
+                            <div class="step-number">2</div>
+                            <h3 class="step-title">Copia la URL o el código ASIN</h3>
+                        </div>
+                        <p class="step-desc">Copia la dirección completa del producto desde tu navegador</p>
+                        <div class="example-box">
+                            ✅ Ejemplo: https://www.amazon.com/dp/B07PXGQC1Q<br>
+                            ✅ O solo el código: B07PXGQC1Q
+                        </div>
+                    </div>
+
+                    <div class="step">
+                        <div class="step-header">
+                            <div class="step-number">3</div>
+                            <h3 class="step-title">Pega aquí abajo y haz click en "Analizar"</h3>
+                        </div>
+                        <p class="step-desc">¡Nosotros hacemos todo el trabajo! En 30 segundos verás el análisis completo</p>
+                    </div>
+                </div>
+
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <div class="feature-title">Análisis de Reseñas</div>
+                        <div class="feature-desc">Resumen automático con IA</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💰</div>
+                        <div class="feature-title">Calculadora FBA</div>
+                        <div class="feature-desc">Fees, ROI y ganancia real</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">📦</div>
+                        <div class="feature-title">Estimación Ventas</div>
+                        <div class="feature-desc">Unidades vendidas/mes</div>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🏆</div>
+                        <div class="feature-title">Competencia</div>
+                        <div class="feature-desc">Cuántos sellers compiten</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Analyze by URL Card -->
+            <div class="glass-card" id="analizar">
+                <h2 class="card-title">
+                    <span>🔍</span>
+                    Analizar Producto por URL
+                </h2>
+                <p class="card-subtitle">Pega la URL completa del producto de Amazon o solo el código ASIN</p>
+
+                <form method="POST" action="/analyze">
+                    <div class="form-group">
+                        <label for="product_url">URL del Producto o Código ASIN:</label>
+                        <input type="text"
+                               id="product_url"
+                               name="product_url"
+                               placeholder="https://www.amazon.com/dp/B07PXGQC1Q  o  B07PXGQC1Q"
+                               required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <span>🚀</span>
+                        <span>ANALIZAR PRODUCTO</span>
+                    </button>
+                </form>
+            </div>
+
+            <div class="divider">- O -</div>
+
+            <!-- Search by Name Card -->
+            <div class="glass-card" id="buscar">
+                <h2 class="card-title">
+                    <span>🔎</span>
+                    Buscar Producto por Nombre
+                </h2>
+                <p class="card-subtitle">Escribe lo que quieres buscar (ej: "bluetooth headphones")</p>
+
+                <form method="POST" action="/search">
+                    <div class="form-group">
+                        <label for="product_name">Nombre del Producto:</label>
+                        <input type="text"
+                               id="product_name"
+                               name="product_name"
+                               placeholder="Ej: wireless earbuds, yoga mat, coffee maker..."
+                               required>
+                    </div>
+                    <button type="submit" class="btn btn-secondary">
+                        <span>🔍</span>
+                        <span>BUSCAR EN AMAZON</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Footer Tip -->
+            <div style="text-align: center; color: rgba(255, 255, 255, 0.8); margin-top: 3rem; font-size: 1.05rem;">
+                <p>💡 Tip: Para mejores resultados, usa productos con al menos 50 reseñas</p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Smooth scrolling for navigation
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                if (href.startsWith('#')) {
+                    e.preventDefault();
+                    const target = document.querySelector(href);
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+
+                // Update active state
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Mobile menu toggle (for future mobile version)
+        const sidebar = document.querySelector('.sidebar');
+        const toggleBtn = document.querySelector('.menu-toggle');
+
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+            });
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,216 @@
+<div class="opportunities-container">
+  <div class="header">
+    <h1>Oportunidades FBA</h1>
+    <p>Productos escaneados automáticamente con potencial de ganancia</p>
+  </div>
+
+  <!-- Export Buttons -->
+  <div class="export-buttons">
+    <a href="http://localhost:5000/api/export/opportunities/csv?min_roi={{minRoi}}&min_profit={{minProfit}}" 
+       class="btn-export" target="_blank">
+      📄 Exportar CSV
+    </a>
+    <a href="http://localhost:5000/api/export/opportunities/excel?min_roi={{minRoi}}&min_profit={{minProfit}}" 
+       class="btn-export-excel" target="_blank">
+      📊 Exportar Excel
+    </a>
+  </div>
+
+  @if (loading) {
+    <div class="loading">Cargando...</div>
+  }
+
+  @if (error) {
+    <div class="error">{{ error }}</div>
+  }
+
+  <!-- Stats Cards -->
+  @if (stats) {
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📦</div>
+        <div class="stat-label">Total Oportunidades</div>
+        <div class="stat-value">{{ stats.total_opportunities }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">💵</div>
+        <div class="stat-label">Ganancia Promedio</div>
+        <div class="stat-value">\${{ stats.avg_profit | number:'1.2-2' }}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">📈</div>
+        <div class="stat-label">ROI Promedio</div>
+        <div class="stat-value">{{ stats.avg_roi | number:'1.1-1' }}%</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">🏆</div>
+        <div class="stat-label">Mejor ROI</div>
+        <div class="stat-value">{{ stats.max_roi | number:'1.1-1' }}%</div>
+      </div>
+    </div>
+  }
+
+  <!-- Filters -->
+  <div class="filters">
+    <div class="filter-group">
+      <label class="filter-label">ROI Mínimo (%)</label>
+      <input type="number" class="filter-input" [(ngModel)]="minRoi" (change)="applyFilters()" min="0" step="5">
+    </div>
+    <div class="filter-group">
+      <label class="filter-label">Ganancia Mínima ($)</label>
+      <input type="number" class="filter-input" [(ngModel)]="minProfit" (change)="applyFilters()" min="0" step="1">
+    </div>
+    <div class="filter-group">
+      <label class="filter-label" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+        <input type="checkbox" [(ngModel)]="fbaSafeOnly" (change)="filterFbaSafe()" style="cursor: pointer; width: 18px; height: 18px;">
+        <span>Solo productos FBA-Safe</span>
+      </label>
+    </div>
+    <button class="btn-scan" (click)="startScan()">
+      ⚡ Escaneo Ultra-Rápido
+    </button>
+  </div>
+
+  <!-- Opportunities Table -->
+  @if (opportunities.length > 0) {
+    <div class="table-container">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Imagen</th>
+            <th>Producto</th>
+            <th>Categoría</th>
+            <th>Amazon</th>
+            <th>Proveedor (COMPRAR)</th>
+            <th>Costo</th>
+            <th>Ganancia</th>
+            <th>ROI</th>
+            <th>Margen</th>
+            <th>Nivel</th>
+            <th>FBA Status</th>
+            <th>Detalles Producto</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (opp of filteredOpportunities; track opp.asin) {
+            <tr>
+              <!-- Imagen -->
+              <td>
+                @if (opp.image_url) {
+                  <img [src]="opp.image_url" [alt]="opp.product_name" class="product-image" loading="lazy">
+                } @else {
+                  <div class="product-image placeholder">📦</div>
+                }
+              </td>
+
+              <!-- Producto -->
+              <td>
+                <span class="link-label">Ver en Amazon:</span><br>
+                <a [href]="opp.amazon_url || 'https://www.amazon.com/dp/' + opp.asin" 
+                   target="_blank" class="product-link">
+                  {{ opp.product_name.substring(0, 50) }}{{ opp.product_name.length > 50 ? '...' : '' }}
+                </a><br>
+                <small style="color: rgba(255,255,255,0.5);">{{ opp.asin }}</small>
+              </td>
+
+              <!-- Categoría -->
+              <td>{{ opp.category }}</td>
+
+              <!-- Precio Amazon -->
+              <td>\${{ opp.amazon_price | number:'1.2-2' }}</td>
+
+              <!-- Proveedores -->
+              <td>
+                @if (opp.all_supplier_urls) {
+                  <div class="supplier-buttons">
+                    @for (supplier of getSupplierUrls(opp); track supplier.name) {
+                      <a [href]="supplier.url" target="_blank" class="supplier-link">
+                        {{ supplier.icon }} {{ supplier.name }}
+                      </a>
+                    }
+                  </div>
+                  <small style="color: rgba(255,255,255,0.5); font-size: 0.75em;">
+                    Mejor: {{ opp.supplier_name }} - \${{ opp.supplier_price | number:'1.2-2' }}
+                  </small>
+                } @else {
+                  {{ opp.supplier_name }}<br>
+                  <small style="color: rgba(255,255,255,0.6);">\${{ opp.supplier_price | number:'1.2-2' }}</small>
+                }
+              </td>
+
+              <!-- Costo Total -->
+              <td>\${{ opp.total_cost | number:'1.2-2' }}</td>
+
+              <!-- Ganancia -->
+              <td [class]="opp.net_profit > 0 ? 'profit-positive' : 'profit-negative'">
+                \${{ opp.net_profit | number:'1.2-2' }}
+              </td>
+
+              <!-- ROI -->
+              <td class="profit-positive">{{ opp.roi_percent | number:'1.1-1' }}%</td>
+
+              <!-- Margen -->
+              <td>{{ opp.margin_percent | number:'1.1-1' }}%</td>
+
+              <!-- Nivel Competitividad -->
+              <td>
+                <span [class]="getCompetitivenessClass(opp.competitiveness_level)">
+                  {{ opp.competitiveness_level }}
+                </span>
+              </td>
+
+              <!-- FBA Status -->
+              <td>
+                <span [class]="opp.fba_compliant === 1 ? 'badge badge-fba-safe' : 'badge badge-fba-unsafe'">
+                  {{ opp.fba_compliant === 1 ? 'FBA Safe' : 'NO APTO' }}
+                </span>
+                <div class="fba-size-tier">
+                  {{ opp.fba_size_tier || 'N/A' }}
+                </div>
+                @if (opp.fba_warnings && opp.fba_warnings.length > 0) {
+                  <span class="warning-icon" [title]="opp.fba_warnings">⚠️</span>
+                }
+              </td>
+
+              <!-- Detalles Producto -->
+              <td>
+                <div class="product-details">
+                  @if (opp.product_length && opp.product_width && opp.product_height) {
+                    <div class="detail-line">
+                      <span class="detail-label">Dimensiones:</span><br>
+                      {{ opp.product_length | number:'1.2-2' }} x 
+                      {{ opp.product_width | number:'1.2-2' }} x 
+                      {{ opp.product_height | number:'1.2-2' }} in
+                    </div>
+                  }
+                  @if (opp.product_weight) {
+                    <div class="detail-line">
+                      <span class="detail-label">Peso:</span> {{ opp.product_weight | number:'1.2-2' }} lbs
+                    </div>
+                  }
+                  @if (opp.product_rating) {
+                    <div class="detail-line">
+                      <span class="rating-stars">⭐ {{ opp.product_rating }}</span>
+                      @if (opp.review_count) {
+                        ({{ opp.review_count | number }} reviews)
+                      }
+                    </div>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  } @else if (!loading) {
+    <div class="no-opportunities">
+      <div class="no-opportunities-icon">🔍</div>
+      <h2>No hay oportunidades disponibles</h2>
+      <p>Ejecuta un escaneo para encontrar productos rentables</p>
+      <button class="btn-scan" (click)="startScan()">
+        ⚡ Iniciar Primer Escaneo
+      </button>
+    </div>
+  }
+</div>

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico BSR - {{ product_name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            padding: 2rem;
+            color: white;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(30px);
+            border-radius: 24px;
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .info-item {
+            text-align: center;
+        }
+
+        .info-label {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.5rem;
+        }
+
+        .info-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(30px);
+            border-radius: 24px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 1rem;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .no-data h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: white;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .back-link {
+            margin-top: 2rem;
+        }
+
+        .error-message {
+            background: rgba(255, 59, 48, 0.2);
+            border: 2px solid rgba(255, 59, 48, 0.5);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Histórico BSR y Precio</h1>
+            <p>{{ product_name }} - ASIN: {{ asin }}</p>
+        </div>
+
+        {% if error %}
+        <div class="error-message">
+            <strong>❌ Error:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        {% if has_data %}
+        <div class="info-card">
+            <div class="info-item">
+                <div class="info-label">Período</div>
+                <div class="info-value">{{ days }} días</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Puntos de Datos</div>
+                <div class="info-value">{{ chart_data.dates|length }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">BSR Actual</div>
+                <div class="info-value">#{{ chart_data.bsr[-1] if chart_data.bsr and chart_data.bsr[-1] else 'N/A' }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Precio Actual</div>
+                <div class="info-value">${{ "%.2f"|format(chart_data.prices[-1]) if chart_data.prices and chart_data.prices[-1] else 'N/A' }}</div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h2 class="chart-title">
+                <span>📉</span>
+                Best Seller Rank (BSR) Histórico
+            </h2>
+            <div class="chart-wrapper">
+                <canvas id="bsrChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h2 class="chart-title">
+                <span>💰</span>
+                Precio Histórico
+            </h2>
+            <div class="chart-wrapper">
+                <canvas id="priceChart"></canvas>
+            </div>
+        </div>
+        {% else %}
+        <div class="chart-container">
+            <div class="no-data">
+                <h3>📭 No hay datos históricos disponibles</h3>
+                <p>Este producto aún no tiene historial de BSR registrado.</p>
+                <p style="margin-top: 1rem; color: rgba(255, 255, 255, 0.5);">
+                    Los datos se recopilan automáticamente cuando el producto es trackeado.
+                </p>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="back-link">
+            <a href="/" class="btn btn-secondary">🏠 Volver al Inicio</a>
+            <a href="/result?asin={{ asin }}&url=https://www.amazon.com/dp/{{ asin }}" class="btn" style="margin-left: 1rem;">
+                🔍 Ver Análisis Completo
+            </a>
+        </div>
+    </div>
+
+    {% if has_data %}
+    <script>
+        // Datos desde Flask
+        const chartData = {{ chart_data | tojson }};
+        const dates = {{ chart_data.dates | tojson }};
+        const bsrData = {{ chart_data.bsr | tojson }};
+        const priceData = {{ chart_data.prices | tojson }};
+
+        // Formatear fechas
+        const formattedDates = dates.map(date => {
+            const d = new Date(date);
+            return d.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' });
+        });
+
+        // Configuración común
+        const chartConfig = {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: {
+                        color: 'rgba(255, 255, 255, 0.9)',
+                        font: {
+                            size: 14,
+                            weight: '600'
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: 'rgba(255, 255, 255, 1)',
+                    bodyColor: 'rgba(255, 255, 255, 0.9)',
+                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                    borderWidth: 1,
+                    padding: 12,
+                    displayColors: false,
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.parsed.y.toLocaleString();
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        maxRotation: 45,
+                        minRotation: 45
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                },
+                y: {
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.7)',
+                        callback: function(value) {
+                            return value.toLocaleString();
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                }
+            }
+        };
+
+        // Gráfico de BSR (invertido, menor = mejor)
+        const bsrCtx = document.getElementById('bsrChart').getContext('2d');
+        new Chart(bsrCtx, {
+            type: 'line',
+            data: {
+                labels: formattedDates,
+                datasets: [{
+                    label: 'BSR (Best Seller Rank)',
+                    data: bsrData.filter(b => b != null),
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: 'rgba(102, 126, 234, 1)',
+                    pointBorderColor: 'rgba(255, 255, 255, 1)',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                ...chartConfig,
+                plugins: {
+                    ...chartConfig.plugins,
+                    title: {
+                        display: true,
+                        text: 'Menor BSR = Mejor Posición en Ventas',
+                        color: 'rgba(255, 255, 255, 0.8)',
+                        font: {
+                            size: 14
+                        }
+                    },
+                    tooltip: {
+                        ...chartConfig.plugins.tooltip,
+                        callbacks: {
+                            label: function(context) {
+                                return 'BSR: #' + context.parsed.y.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    ...chartConfig.scales,
+                    y: {
+                        ...chartConfig.scales.y,
+                        reverse: true, // Invertir eje Y (menor = arriba)
+                        ticks: {
+                            ...chartConfig.scales.y.ticks,
+                            callback: function(value) {
+                                return '#' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Gráfico de Precio
+        const priceCtx = document.getElementById('priceChart').getContext('2d');
+        new Chart(priceCtx, {
+            type: 'line',
+            data: {
+                labels: formattedDates,
+                datasets: [{
+                    label: 'Precio ($)',
+                    data: priceData.filter(p => p != null),
+                    borderColor: 'rgba(240, 147, 251, 1)',
+                    backgroundColor: 'rgba(240, 147, 251, 0.1)',
+                    tension: 0.4,
+                    fill: true,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: 'rgba(240, 147, 251, 1)',
+                    pointBorderColor: 'rgba(255, 255, 255, 1)',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                ...chartConfig,
+                plugins: {
+                    ...chartConfig.plugins,
+                    tooltip: {
+                        ...chartConfig.plugins.tooltip,
+                        callbacks: {
+                            label: function(context) {
+                                return 'Precio: $' + context.parsed.y.toFixed(2);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    ...chartConfig.scales,
+                    y: {
+                        ...chartConfig.scales.y,
+                        beginAtZero: false,
+                        ticks: {
+                            ...chartConfig.scales.y.ticks,
+                            callback: function(value) {
+                                return '$' + value.toFixed(2);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+    {% endif %}
+</body>
+</html>
+

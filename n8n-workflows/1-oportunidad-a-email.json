@@ -1,0 +1,144 @@
+{
+  "name": "HECTOR FBA - Oportunidad a Email",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "hector-fba-opportunity",
+        "responseMode": "onReceived"
+      },
+      "id": "webhook1",
+      "name": "Webhook - Nueva Oportunidad",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.data.roi }}",
+              "operation": "larger",
+              "value2": 30
+            }
+          ]
+        }
+      },
+      "id": "if1",
+      "name": "IF ROI > 30%",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "sendTo": "tu@email.com",
+        "subject": "🚀 Nueva Oportunidad FBA - ROI {{ $json.data.roi }}%",
+        "message": "=Producto: {{ $json.data.product_name }}\nASIN: {{ $json.data.asin }}\n\n💰 Precio Amazon: ${{ $json.data.amazon_price }}\n🏪 Precio Proveedor: ${{ $json.data.supplier_price }}\n\n📈 ROI: {{ $json.data.roi }}%\n💵 Ganancia: ${{ $json.data.profit }}\n\n🏆 Competitividad: {{ $json.data.competitiveness }}\n📦 Categoría: {{ $json.data.category }}\n\nVer en Amazon: {{ $json.data.url }}\nDashboard: {{ $json.data.dashboard_url }}"
+      },
+      "id": "gmail1",
+      "name": "Enviar Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2,
+      "position": [650, 200],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REEMPLAZAR_CON_TU_CREDENTIAL_ID",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "sheetId": "REEMPLAZAR_CON_TU_SHEET_ID",
+        "range": "A:H",
+        "options": {
+          "valueInputMode": "USER_ENTERED"
+        },
+        "columns": {
+          "mappings": [
+            {
+              "column": "ASIN",
+              "value": "={{ $json.data.asin }}"
+            },
+            {
+              "column": "Producto",
+              "value": "={{ $json.data.product_name }}"
+            },
+            {
+              "column": "Precio Amazon",
+              "value": "={{ $json.data.amazon_price }}"
+            },
+            {
+              "column": "Precio Proveedor",
+              "value": "={{ $json.data.supplier_price }}"
+            },
+            {
+              "column": "ROI %",
+              "value": "={{ $json.data.roi }}"
+            },
+            {
+              "column": "Ganancia",
+              "value": "={{ $json.data.profit }}"
+            },
+            {
+              "column": "Proveedor",
+              "value": "={{ $json.data.supplier }}"
+            },
+            {
+              "column": "Fecha",
+              "value": "={{ $now }}"
+            }
+          ]
+        }
+      },
+      "id": "sheets1",
+      "name": "Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 3,
+      "position": [650, 400],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REEMPLAZAR_CON_TU_CREDENTIAL_ID",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook - Nueva Oportunidad": {
+      "main": [
+        [
+          {
+            "node": "IF ROI > 30%",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF ROI > 30%": {
+      "main": [
+        [
+          {
+            "node": "Enviar Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "staticData": null,
+  "tags": ["HECTOR FBA", "Oportunidades", "Email"],
+  "pinData": {},
+  "versionId": "1"
+}

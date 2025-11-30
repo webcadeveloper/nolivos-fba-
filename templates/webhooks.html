@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webhooks - NOLIVOS FBA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px 0;
+        }
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .webhook-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .webhook-item:last-child {
+            border-bottom: none;
+        }
+        .event-badge {
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 10px;
+            margin: 2px;
+            display: inline-block;
+        }
+        .log-item {
+            font-size: 0.9rem;
+            padding: 10px;
+            border-left: 3px solid #28a745;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+        }
+        .log-item.error {
+            border-left-color: #dc3545;
+        }
+        .btn-test {
+            padding: 5px 15px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="text-center text-white mb-4">
+            <h1>🔗 Gestión de Webhooks</h1>
+            <p>Integración con n8n, Zapier y Make</p>
+        </div>
+
+        <!-- Webhooks Registrados -->
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">📡 Webhooks Registrados</h4>
+            </div>
+            <div class="card-body">
+                {% if webhooks %}
+                    {% for webhook in webhooks %}
+                    <div class="webhook-item">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <h5>{{ webhook.name }}</h5>
+                                <small class="text-muted">{{ webhook.url }}</small>
+                                <div class="mt-2">
+                                    {% for event in webhook.events.split(',') %}
+                                        <span class="badge bg-info event-badge">{{ event }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <small class="text-muted">
+                                    Creado: {{ webhook.created_at }}<br>
+                                    ID: {{ webhook.id }}
+                                </small>
+                            </div>
+                            <div class="col-md-3 text-end">
+                                <button class="btn btn-sm btn-success btn-test" onclick="testWebhook({{ webhook.id }})">
+                                    🧪 Probar
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteWebhook({{ webhook.id }})">
+                                    🗑️ Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-info">
+                        ℹ️ No hay webhooks registrados.
+                        <a href="/api/v1/webhooks/register" class="alert-link">Registra uno usando la API</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Eventos Disponibles -->
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">📋 Eventos Disponibles ({{ available_events|length }})</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for event, description in available_events.items() %}
+                    <div class="col-md-4 mb-3">
+                        <div class="border rounded p-3">
+                            <strong>{{ event }}</strong><br>
+                            <small class="text-muted">{{ description }}</small><br>
+                            <button class="btn btn-sm btn-outline-primary mt-2" onclick="triggerManual('{{ event }}')">
+                                ⚡ Disparar Prueba
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs Recientes -->
+        <div class="card">
+            <div class="card-header bg-warning">
+                <h4 class="mb-0">📜 Logs Recientes (Últimos 50)</h4>
+            </div>
+            <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+                {% if logs %}
+                    {% for log in logs %}
+                    <div class="log-item {% if not log.success %}error{% endif %}">
+                        <div class="row">
+                            <div class="col-md-2">
+                                <small>{{ log.timestamp }}</small>
+                            </div>
+                            <div class="col-md-3">
+                                <strong>{{ log.event_type }}</strong>
+                            </div>
+                            <div class="col-md-5">
+                                <small>{{ log.webhook_url[:50] }}...</small>
+                            </div>
+                            <div class="col-md-2 text-end">
+                                {% if log.success %}
+                                    <span class="badge bg-success">✓ Exitoso</span>
+                                {% else %}
+                                    <span class="badge bg-danger">✗ Error</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% if log.response %}
+                        <small class="text-muted">Respuesta: {{ log.response[:100] }}</small>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-info">
+                        ℹ️ No hay logs disponibles todavía
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Documentación Rápida -->
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">📚 Documentación Rápida</h4>
+            </div>
+            <div class="card-body">
+                <h5>Registrar Webhook via API</h5>
+                <pre class="bg-dark text-white p-3 rounded"><code>curl -X POST \
+  -H "X-API-Key: tu_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://tu-n8n.com/webhook/abc123",
+    "events": ["opportunity_found", "price_drop"],
+    "name": "n8n Production"
+  }' \
+  http://localhost:4994/api/v1/webhooks/register</code></pre>
+
+                <h5 class="mt-4">Ejemplo n8n Workflow</h5>
+                <ol>
+                    <li>Crea un nodo <strong>Webhook</strong> en n8n</li>
+                    <li>Copia la URL del webhook</li>
+                    <li>Regístrala usando el comando de arriba</li>
+                    <li>Prueba usando los botones "Disparar Prueba"</li>
+                    <li>Observa los logs en esta página</li>
+                </ol>
+
+                <a href="/static/N8N_WORKFLOWS.md" class="btn btn-primary" target="_blank">
+                    📖 Ver Workflows Completos de n8n
+                </a>
+            </div>
+        </div>
+
+        <!-- Botón Volver -->
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-light btn-lg">
+                ← Volver al Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function testWebhook(webhookId) {
+            if (confirm('¿Enviar evento de prueba a este webhook?')) {
+                fetch(`/webhooks/test/${webhookId}`, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('✅ Webhook probado exitosamente!\n\nStatus: ' + data.status_code);
+                    } else {
+                        alert('❌ Error: ' + (data.error || 'Error desconocido'));
+                    }
+                    location.reload();
+                })
+                .catch(error => {
+                    alert('Error: ' + error);
+                });
+            }
+        }
+
+        function deleteWebhook(webhookId) {
+            if (confirm('¿Seguro que quieres eliminar este webhook?')) {
+                fetch(`/webhooks/delete/${webhookId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert('Webhook eliminado');
+                    location.reload();
+                })
+                .catch(error => {
+                    alert('Error: ' + error);
+                });
+            }
+        }
+
+        function triggerManual(eventType) {
+            if (confirm(`¿Disparar evento de prueba "${eventType}" a todos los webhooks suscritos?`)) {
+                fetch('/webhooks/trigger-manual', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        event_type: eventType
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert('✅ Evento disparado!\n\n' + data.message);
+                    setTimeout(() => location.reload(), 1000);
+                })
+                .catch(error => {
+                    alert('Error: ' + error);
+                });
+            }
+        }
+    </script>
+</body>
+</html>

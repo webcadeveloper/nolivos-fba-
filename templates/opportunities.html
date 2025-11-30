@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oportunidades de Arbitraje - NOLIVOS FBA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-right: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 2rem;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+        }
+
+        .logo {
+            margin-bottom: 3rem;
+            text-align: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo img {
+            max-width: 180px;
+            height: auto;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.875rem 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-link.active {
+            background: rgba(76, 175, 80, 0.2);
+            color: white;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(30px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .stat-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            color: white;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Filters */
+        .filters {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(30px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-label {
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .filter-input {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 0.95rem;
+            min-width: 120px;
+        }
+
+        .filter-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .btn-scan {
+            padding: 0.875rem 1.5rem;
+            background: linear-gradient(135deg, #4CAF50, #8BC34A);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: auto;
+        }
+
+        .btn-scan:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        /* Opportunities Table */
+        .opportunities-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(30px);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th {
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 600;
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            white-space: nowrap;
+        }
+
+        .table td {
+            color: rgba(255, 255, 255, 0.85);
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .product-link {
+            color: #4CAF50;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .product-link:hover {
+            text-decoration: underline;
+        }
+
+        .product-image {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px;
+        }
+
+        .supplier-link {
+            color: #FF9800;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .supplier-link:hover {
+            color: #FFC107;
+            text-decoration: underline;
+        }
+
+        .link-label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.5);
+            margin-right: 0.3rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .badge-excellent {
+            background: rgba(76, 175, 80, 0.3);
+            color: #8BC34A;
+            border: 1px solid rgba(76, 175, 80, 0.5);
+        }
+
+        /* Export Buttons */
+        .btn-export:hover,
+        .btn-export-excel:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-export:hover {
+            background: rgba(76, 175, 80, 0.3) !important;
+        }
+
+        .btn-export-excel:hover {
+            background: rgba(33, 150, 243, 0.3) !important;
+        }
+
+        .badge-good {
+            background: rgba(255, 193, 7, 0.3);
+            color: #FFC107;
+            border: 1px solid rgba(255, 193, 7, 0.5);
+        }
+
+        .badge-regular {
+            background: rgba(255, 152, 0, 0.3);
+            color: #FF9800;
+            border: 1px solid rgba(255, 152, 0, 0.5);
+        }
+
+        .badge-low {
+            background: rgba(244, 67, 54, 0.3);
+            color: #f44336;
+            border: 1px solid rgba(244, 67, 54, 0.5);
+        }
+
+        /* FBA Badges */
+        .badge-fba-safe {
+            background: rgba(76, 175, 80, 0.3);
+            color: #4CAF50;
+            border: 1px solid rgba(76, 175, 80, 0.5);
+        }
+
+        .badge-fba-unsafe {
+            background: rgba(244, 67, 54, 0.3);
+            color: #f44336;
+            border: 1px solid rgba(244, 67, 54, 0.5);
+        }
+
+        .fba-size-tier {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 0.25rem;
+        }
+
+        .warning-icon {
+            color: #FF9800;
+            cursor: pointer;
+            font-size: 1.2rem;
+            margin-left: 0.5rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        .warning-tooltip {
+            visibility: hidden;
+            background: rgba(30, 30, 30, 0.98);
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 152, 0, 0.5);
+        }
+
+        .warning-icon:hover .warning-tooltip {
+            visibility: visible;
+        }
+
+        .warning-tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: rgba(30, 30, 30, 0.98) transparent transparent transparent;
+        }
+
+        .warning-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .warning-list li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .warning-list li:last-child {
+            border-bottom: none;
+        }
+
+        .warning-list li::before {
+            content: "⚠️ ";
+            margin-right: 0.5rem;
+        }
+
+        .product-details {
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        .detail-line {
+            color: rgba(255, 255, 255, 0.7);
+            margin: 0.25rem 0;
+        }
+
+        .detail-label {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.75rem;
+        }
+
+        .rating-stars {
+            color: #FFC107;
+            font-size: 0.9rem;
+        }
+
+        .profit-positive {
+            color: #4CAF50;
+            font-weight: 700;
+        }
+
+        .profit-negative {
+            color: #f44336;
+            font-weight: 700;
+        }
+
+        .no-opportunities {
+            text-align: center;
+            padding: 3rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .no-opportunities-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .scan-info {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <img src="/static/images/logo.png" alt="NOLIVOS FBA">
+        </div>
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="/" class="nav-link">
+                    <span>🏠</span>
+                    <span>Inicio</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/opportunities" class="nav-link active">
+                    <span>💰</span>
+                    <span>Oportunidades</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="/tracked-products" class="nav-link">
+                    <span>📊</span>
+                    <span>Productos Trackeados</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <div class="header">
+                <h1>🔍 Oportunidades de Arbitraje</h1>
+                <p>Productos escaneados automáticamente con potencial de ganancia</p>
+            </div>
+
+            <!-- Export Buttons -->
+            <div style="margin-bottom: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
+                <a href="/export/opportunities/csv?min_roi=5&min_profit=3"
+                   class="btn-export"
+                   style="background: rgba(76, 175, 80, 0.2); color: white; padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid rgba(76, 175, 80, 0.3); transition: all 0.3s ease;">
+                    <span>📄</span>
+                    <span>Exportar CSV</span>
+                </a>
+                <a href="/export/opportunities/excel?min_roi=5&min_profit=3"
+                   class="btn-export-excel"
+                   style="background: rgba(33, 150, 243, 0.2); color: white; padding: 0.75rem 1.5rem; border-radius: 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; border: 1px solid rgba(33, 150, 243, 0.3); transition: all 0.3s ease;">
+                    <span>📊</span>
+                    <span>Exportar Excel</span>
+                </a>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📦</div>
+                    <div class="stat-label">Total Oportunidades</div>
+                    <div class="stat-value">{{ stats.total_opportunities }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💵</div>
+                    <div class="stat-label">Ganancia Promedio</div>
+                    <div class="stat-value">${{ "%.2f"|format(stats.avg_profit) }}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-label">ROI Promedio</div>
+                    <div class="stat-value">{{ "%.1f"|format(stats.avg_roi) }}%</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🏆</div>
+                    <div class="stat-label">Mejor ROI</div>
+                    <div class="stat-value">{{ "%.1f"|format(stats.max_roi) }}%</div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters">
+                <div class="filter-group">
+                    <label class="filter-label">ROI Mínimo (%)</label>
+                    <input type="number" class="filter-input" id="min-roi" value="5" min="0" step="5">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Ganancia Mínima ($)</label>
+                    <input type="number" class="filter-input" id="min-profit" value="3" min="0" step="1">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label" style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" id="fba-safe-only" style="cursor: pointer; width: 18px; height: 18px;">
+                        <span>Solo productos FBA-Safe</span>
+                    </label>
+                </div>
+                <button class="btn-scan" onclick="window.location.href='/scan-products'">
+                    ⚡ Escaneo Ultra-Rápido (20x)
+                </button>
+            </div>
+
+            <!-- Opportunities Table -->
+            <div class="opportunities-container">
+                {% if opportunities %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Imagen</th>
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th>Amazon</th>
+                            <th>Proveedor (COMPRAR)</th>
+                            <th>Costo</th>
+                            <th>Ganancia</th>
+                            <th>ROI</th>
+                            <th>Margen</th>
+                            <th>Nivel</th>
+                            <th>FBA Status</th>
+                            <th>Detalles Producto</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for opp in opportunities %}
+                        <tr>
+                            <td>
+                                {% if opp.image_url %}
+                                    <img src="{{ opp.image_url }}" alt="{{ opp.product_name[:30] }}" class="product-image" loading="lazy">
+                                {% else %}
+                                    <div class="product-image" style="display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.3);">📦</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="link-label">Ver en Amazon:</span>
+                                <a href="{% if opp.amazon_url %}{{ opp.amazon_url }}{% else %}https://www.amazon.com/dp/{{ opp.asin }}{% endif %}" target="_blank" class="product-link">
+                                    {{ opp.product_name[:50] }}{% if opp.product_name|length > 50 %}...{% endif %}
+                                </a>
+                                <br>
+                                <small style="color: rgba(255,255,255,0.5);">{{ opp.asin }}</small>
+                            </td>
+                            <td>{{ opp.category }}</td>
+                            <td>${{ "%.2f"|format(opp.amazon_price) }}</td>
+                            <td>
+                                {% if opp.all_supplier_urls %}
+                                    {% set provider_urls = opp.all_supplier_urls|from_json %}
+                                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
+                                        <a href="{{ provider_urls.aliexpress.url }}" target="_blank" class="supplier-link" style="font-size: 0.85em; padding: 4px 8px; background: rgba(255, 180, 50, 0.15); border-radius: 4px; text-decoration: none; display: inline-block;">
+                                            {{ provider_urls.aliexpress.icon }} AliEx
+                                        </a>
+                                        <a href="{{ provider_urls.ebay.url }}" target="_blank" class="supplier-link" style="font-size: 0.85em; padding: 4px 8px; background: rgba(0, 120, 255, 0.15); border-radius: 4px; text-decoration: none; display: inline-block;">
+                                            {{ provider_urls.ebay.icon }} eBay
+                                        </a>
+                                        <a href="{{ provider_urls.walmart.url }}" target="_blank" class="supplier-link" style="font-size: 0.85em; padding: 4px 8px; background: rgba(0, 114, 206, 0.15); border-radius: 4px; text-decoration: none; display: inline-block;">
+                                            {{ provider_urls.walmart.icon }} Walmart
+                                        </a>
+                                        <a href="{{ provider_urls.target.url }}" target="_blank" class="supplier-link" style="font-size: 0.85em; padding: 4px 8px; background: rgba(204, 0, 0, 0.15); border-radius: 4px; text-decoration: none; display: inline-block;">
+                                            {{ provider_urls.target.icon }} Target
+                                        </a>
+                                    </div>
+                                    <small style="color: rgba(255,255,255,0.5); font-size: 0.75em;">Mejor: {{ opp.supplier_name }} - ${{ "%.2f"|format(opp.supplier_price) }}</small>
+                                {% else %}
+                                    {% if opp.supplier_url %}
+                                        <a href="{{ opp.supplier_url }}" target="_blank" class="supplier-link">
+                                            🛒 {{ opp.supplier_name }}
+                                        </a>
+                                    {% else %}
+                                        {{ opp.supplier_name }}
+                                    {% endif %}
+                                    <br>
+                                    <small style="color: rgba(255,255,255,0.6);">${{ "%.2f"|format(opp.supplier_price) }}</small>
+                                {% endif %}
+                            </td>
+                            <td>${{ "%.2f"|format(opp.total_cost) }}</td>
+                            <td class="{% if opp.net_profit > 0 %}profit-positive{% else %}profit-negative{% endif %}">
+                                ${{ "%.2f"|format(opp.net_profit) }}
+                            </td>
+                            <td class="profit-positive">{{ "%.1f"|format(opp.roi_percent) }}%</td>
+                            <td>{{ "%.1f"|format(opp.margin_percent) }}%</td>
+                            <td>
+                                {% if '🟢' in opp.competitiveness_level %}
+                                    <span class="badge badge-excellent">{{ opp.competitiveness_level }}</span>
+                                {% elif '🟡' in opp.competitiveness_level %}
+                                    <span class="badge badge-good">{{ opp.competitiveness_level }}</span>
+                                {% elif '🟠' in opp.competitiveness_level %}
+                                    <span class="badge badge-regular">{{ opp.competitiveness_level }}</span>
+                                {% else %}
+                                    <span class="badge badge-low">{{ opp.competitiveness_level }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if opp.fba_compliant == 1 %}
+                                    <span class="badge badge-fba-safe">FBA Safe</span>
+                                {% else %}
+                                    <span class="badge badge-fba-unsafe">NO APTO</span>
+                                {% endif %}
+                                <div class="fba-size-tier">
+                                    {{ opp.fba_size_tier if opp.fba_size_tier else 'N/A' }}
+                                </div>
+                                {% if opp.fba_warnings and opp.fba_warnings|length > 0 %}
+                                    <span class="warning-icon">
+
+                                        <div class="warning-tooltip">
+                                            <strong style="display: block; margin-bottom: 0.5rem; color: #FF9800;">Advertencias FBA:</strong>
+                                            <ul class="warning-list">
+                                                {% for warning in opp.fba_warnings.split(',') %}
+                                                    <li>{{ warning.strip() }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="product-details">
+                                    {% if opp.product_length and opp.product_width and opp.product_height %}
+                                        <div class="detail-line">
+                                            <span class="detail-label">Dimensiones:</span><br>
+                                            {{ "%.2f"|format(opp.product_length) }} x {{ "%.2f"|format(opp.product_width) }} x {{ "%.2f"|format(opp.product_height) }} in
+                                        </div>
+                                    {% endif %}
+                                    {% if opp.product_weight %}
+                                        <div class="detail-line">
+                                            <span class="detail-label">Peso:</span> {{ "%.2f"|format(opp.product_weight) }} lbs
+                                        </div>
+                                    {% endif %}
+                                    {% if opp.product_rating %}
+                                        <div class="detail-line">
+                                            <span class="rating-stars">
+                                                ⭐ {{ opp.product_rating }}
+                                            </span>
+                                            {% if opp.review_count %}
+                                                ({{ "{:,}".format(opp.review_count) }} reviews)
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <a href="/analyze?url={% if opp.amazon_url %}{{ opp.amazon_url }}{% else %}https://www.amazon.com/dp/{{ opp.asin }}{% endif %}" class="product-link">
+                                    Analizar
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="no-opportunities">
+                    <div class="no-opportunities-icon">🔍</div>
+                    <h2 style="color: white; margin-bottom: 1rem;">No hay oportunidades disponibles</h2>
+                    <p>Ejecuta un escaneo para encontrar productos rentables</p>
+                    <button class="btn-scan" onclick="window.location.href='/scan-products'" style="margin-top: 2rem;">
+                        ⚡ Iniciar Primer Escaneo (Ultra-Rápido)
+                    </button>
+                </div>
+                {% endif %}
+
+                <div class="scan-info">
+                    Última actualización: {{ last_scan_date if last_scan_date else 'Nunca' }}
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Auto-refresh filters
+        document.getElementById('min-roi').addEventListener('change', applyFilters);
+        document.getElementById('min-profit').addEventListener('change', applyFilters);
+        document.getElementById('fba-safe-only').addEventListener('change', filterFbaSafe);
+
+        function applyFilters() {
+            const minRoi = document.getElementById('min-roi').value;
+            const minProfit = document.getElementById('min-profit').value;
+            window.location.href = `/opportunities?min_roi=${minRoi}&min_profit=${minProfit}`;
+        }
+
+        function filterFbaSafe() {
+            const fbaSafeOnly = document.getElementById('fba-safe-only').checked;
+            const rows = document.querySelectorAll('.table tbody tr');
+
+            rows.forEach(row => {
+                const fbaBadge = row.querySelector('.badge-fba-safe');
+                if (fbaSafeOnly) {
+                    // Show only FBA-Safe products
+                    if (fbaBadge) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                } else {
+                    // Show all products
+                    row.style.display = '';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

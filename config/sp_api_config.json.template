@@ -1,0 +1,29 @@
+{
+  "_comment": "Amazon SP-API Configuration - DO NOT COMMIT TO GIT",
+  "_instructions": "Obtén estas credenciales desde: https://developer-docs.amazon.com/sp-api/",
+  
+  "lwa_app_id": "amzn1.application-oa2-client.YOUR_APP_ID",
+  "lwa_client_secret": "YOUR_CLIENT_SECRET",
+  "refresh_token": "YOUR_REFRESH_TOKEN",
+  
+  "aws_access_key": "YOUR_AWS_ACCESS_KEY",
+  "aws_secret_key": "YOUR_AWS_SECRET_KEY",
+  "role_arn": "arn:aws:iam::YOUR_ACCOUNT:role/YOUR_ROLE",
+  
+  "marketplace_id": "ATVPDKIKX0DER",
+  "marketplace_name": "US",
+  "region": "us-east-1",
+  
+  "endpoints": {
+    "na": "https://sellingpartnerapi-na.amazon.com",
+    "eu": "https://sellingpartnerapi-eu.amazon.com",
+    "fe": "https://sellingpartnerapi-fe.amazon.com"
+  },
+  
+  "rate_limits": {
+    "orders": 0.0167,
+    "catalog": 2.0,
+    "fees": 1.0,
+    "advertising": 1.0
+  }
+}
